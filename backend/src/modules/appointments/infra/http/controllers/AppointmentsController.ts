@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { parseISO } from 'date-fns';
 import { container } from 'tsyringe';
 
 import CreateAppointmentService from '@modules/appointments/services/CreateAppointmentService';
@@ -8,6 +7,7 @@ import AppointmentsRepository from '../../typeorm/repositories/AppointmentsRepos
 export default class AppointmentsController {
   public async index(req: Request, res: Response): Promise<Response> {
     const appointmentsRepository = new AppointmentsRepository();
+
     const appointments = await appointmentsRepository.find();
 
     return res.json(appointments);
@@ -18,13 +18,11 @@ export default class AppointmentsController {
 
     const { provider_id, date } = req.body;
 
-    const parsedDate = parseISO(date);
-
     const createAppointment = container.resolve(CreateAppointmentService);
 
     const appointment = await createAppointment.execute({
       provider_id,
-      date: parsedDate,
+      date,
       user_id,
     });
 

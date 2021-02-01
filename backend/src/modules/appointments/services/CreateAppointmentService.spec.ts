@@ -1,17 +1,29 @@
 import AppError from '@shared/errors/AppError';
+
+import FakeCacheProvider from '@shared/container/providers/CacheProvider/fakes/FakeCacheProvider';
+
+import FakeNotificationsRepository from '@modules/notifications/repositories/fakes/FakeNotificationsRepository';
 import FakeAppointmentRepository from '../repositories/fakes/FakeAppointmentsRepository';
+
 import CreateAppointementService from './CreateAppointmentService';
 
+let fakeCacheProvider: FakeCacheProvider;
 let fakeAppointmentRepository: FakeAppointmentRepository;
+let fakeNotificationsRepository: FakeNotificationsRepository;
 
 let createAppointment: CreateAppointementService;
 
 describe('CreateAppointment', () => {
   beforeEach(() => {
+    fakeCacheProvider = new FakeCacheProvider();
+
     fakeAppointmentRepository = new FakeAppointmentRepository();
+    fakeNotificationsRepository = new FakeNotificationsRepository();
 
     createAppointment = new CreateAppointementService(
       fakeAppointmentRepository,
+      fakeNotificationsRepository,
+      fakeCacheProvider,
     );
 
     jest.spyOn(Date, 'now').mockImplementationOnce(() => {
@@ -37,6 +49,10 @@ describe('CreateAppointment', () => {
       date: appointmentDate,
       provider_id: '123123',
       user_id: 'user_id',
+    });
+
+    jest.spyOn(Date, 'now').mockImplementationOnce(() => {
+      return new Date(2021, 0, 30, 12).getTime();
     });
 
     await expect(
@@ -76,6 +92,10 @@ describe('CreateAppointment', () => {
         user_id: 'user_id',
       }),
     ).rejects.toBeInstanceOf(AppError);
+
+    jest.spyOn(Date, 'now').mockImplementationOnce(() => {
+      return new Date(2021, 0, 30, 12).getTime();
+    });
 
     await expect(
       createAppointment.execute({

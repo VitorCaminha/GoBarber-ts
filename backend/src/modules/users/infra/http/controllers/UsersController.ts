@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
+import { classToClass } from 'class-transformer';
 
 import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
 import CreateUserService from '@modules/users/services/CreateUserService';
@@ -7,15 +8,10 @@ import CreateUserService from '@modules/users/services/CreateUserService';
 export default class UsersController {
   public async index(req: Request, res: Response): Promise<Response> {
     const usersRepository = new UsersRepository();
+
     const users = await usersRepository.find();
 
-    const usersWithoutPassword = users.map(user => {
-      const { password: _, ...userWithoutPassword } = user;
-
-      return userWithoutPassword;
-    });
-
-    return res.json(usersWithoutPassword);
+    return res.json(classToClass(users));
   }
 
   public async create(req: Request, res: Response): Promise<Response> {
@@ -25,8 +21,6 @@ export default class UsersController {
 
     const user = await createUser.execute({ name, email, password });
 
-    const { password: _, ...userWithoutPassword } = user;
-
-    return res.json(userWithoutPassword);
+    return res.json(classToClass(user));
   }
 }
